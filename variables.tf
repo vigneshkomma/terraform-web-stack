@@ -2,10 +2,6 @@ variable "region" {
   description = "AWS region"
 }
 
-variable "key_name" {
-  description = "The AWS key pair to use for resources"
-}
-
 variable "ami" {
   type = map(string)
   description = "A map of AMI's"

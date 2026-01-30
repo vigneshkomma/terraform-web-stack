@@ -12,7 +12,6 @@ module "vpc" {
 resource "aws_instance" "web" {
   ami = "${lookup(var.ami, var.region)}"
   instance_type = "${var.instance_type}"
-  key_name = "${var.key_name}"
   subnet_id = "${module.vpc.public_subnet_id}"
   private_ip = "${var.instance_ips[count.index]}"
   tags = {
@@ -21,20 +20,18 @@ resource "aws_instance" "web" {
   }
   associate_public_ip_address = true
   user_data = "${file("files/web_bootstrap.sh")}"
-  vpc_security_group_ids = ["aws_security_group.web_host_sg.id"]
   count = "${length(var.instance_ips)}"
 }
 
 resource "aws_elb" "web" {
   name = "web-elb"
   subnets = ["${module.vpc.public_subnet_id}"]
-  security_groups = ["${aws_security_group.web_host_sg.id}"]
   listener {
     instance_port = 80
     lb_port = 80
     instance_protocol = "http"
     lb_protocol = "http"
   }
-  instances = ["${aws_instance.web.*.id}"]
+  instances = aws_instance.web[*].id
 }
 
